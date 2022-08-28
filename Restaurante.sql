@@ -78,7 +78,7 @@ CREATE TABLE prato (
 	idPrato int NOT NULL auto_increment primary key,
     nomePrato varchar(45) NOT NULL,
     valorPrato double NOT NULL,
-    igredientes varchar(200) NOT NULL,
+    ingredientes varchar(200) NOT NULL,
     idPedido int NOT NULL,
     idMesa int NOT NULL,
     constraint fk_idPedido_prato foreign key pedido(idPedido)
@@ -122,7 +122,7 @@ VALUES
   (4,"8862912621",5),
   (5,"5268457327",1);
 
-INSERT INTO `funcao` (`idFuncao`,`nomFuncao`,`descricao`)
+INSERT INTO `funcao` (`idFuncao`,`nomeFuncao`,`descricao`)
 VALUES
   (1,"Blevins","sodales at,"),
   (2,"Griffith","lorem tristique aliquet. Phasellus fermentum convallis ligula. Donec luctus aliquet odio. Etiam ligula tortor,"),
@@ -165,8 +165,51 @@ VALUES
   (8,"Russian Federation","West Kalimantan","Cavalcante",1974,"P.O. Box 796, 2843 Blandit Ave",30,"ridiculus mus. Donec dignissim",8,5),
   (9,"Germany","Małopolskie","de Sousa",1700,"3089 Morbi Rd.",215,"purus",9,1),
   (10,"Norway","Xīběi","Mariano",1667,"Ap #283-4024 Nulla. Street",152,"id sapien. Cras dolor dolor,",10,2);
+  
+INSERT INTO `prato` (`idPrato`,`nomePrato`,`valorPrato` ,`igredientes`)
+VALUES
+  (1,"Moses Hopper","R$22,46","Curae Phasellus ornare. Fusce mollis. Duis"),
+  (2,"Nomlanga Underwood","R$3,78","amet lorem semper auctor."),
+  (3,"Hermione Allen","R$66,04","quam. Curabitur"),
+  (4,"Demetria Leon","R$73,88","metus vitae velit egestas lacinia. Sed congue,"),
+  (5,"Aspen Pittman","R$2,37","leo. Cras vehicula aliquet libero."),
+  (6,"Lionel Browning","R$0,30","ultrices posuere cubilia Curae"),
+  (7,"Priscilla Dorsey","R$36,19","sem elit, pharetra ut, pharetra sed, hendrerit a,"),
+  (8,"Petra Conway","R$75,88","sit amet, consectetuer adipiscing elit. Aliquam auctor, velit eget laoreet"),
+  (9,"Serina Hernandez","R$40,02","massa non ante bibendum ullamcorper. Duis"),
+  (10,"Drew Figueroa","R$35,18","Nunc ac sem ut dolor dapibus gravida."),
+  (11,"Cadman Frederick","R$74,56","turpis nec mauris blandit mattis. Cras"),
+  (12,"Clark Garrison","R$72,13","vulputate, nisi sem semper erat, in consectetuer ipsum"),
+  (13,"Quin Hodges","R$26,12","augue porttitor interdum. Sed auctor");
+INSERT INTO prato (idPrato,nomePrato,valorPrato ,igredientes,idPedido,idMesa)
+VALUES
+  (11,"Cadman Frederick","R$74,56","turpis nec mauris blandit mattis. Cras",21,15),
+  (12,"Clark Garrison","R$72,13","vulputate, nisi sem semper erat, in consectetuer ipsum",23,16),
+  (13,"Quin Hodges","R$26,12","augue porttitor interdum. Sed auctor",25,17);
+  
+INSERT INTO `conta` (`idConta`,`valorTotal`,`dataPagamento`)
+VALUES
+  (1,"R$513,54","22/10/2022"),
+  (2,"R$225,22","09/11/2021"),
+  (3,"R$436,97","18/07/2022"),
+  (4,"R$83,33","03/06/2023"),
+  (5,"R$229,59","11/12/2022"),
+  (6,"R$314,80","25/11/2022"),
+  (7,"R$620,40","15/10/2022"),
+  (8,"R$878,16","11/06/2022"),
+  (9,"R$564,20","21/11/2021"),
+  (10,"R$377,05","11/11/2021");
+INSERT INTO `mesa` (`idMesa`,`idFuncionario`,`ocupacao`)
+VALUES
+  (1,1,"1"),
+  (2,2,"0"),
+  (3,9,"0"),
+  (4,7,"0"),
+  (5,8,"1");
 
+SELECT * FROM funcionario;
 
+#Consulta com JOIN:
 SELECT f.idFuncionario, f.nomeFuncionario, e.pais, fc.nomeFuncao FROM
 funcao fc
 INNER JOIN funcionario f
@@ -174,3 +217,48 @@ ON fc.idFuncao = f.idFuncao
 INNER JOIN endereco e
 ON f.idFuncionario = e.idFuncionario
 ORDER BY f.idFuncionario;
+
+#Subquery tabela:
+SELECT fc.idFuncao, fc.nomeFuncao, (SELECT COUNT(f.idFuncao)
+FROM funcionario f WHERE f.idFuncao = fc.idFuncao) AS Quantidade_Funcionarios FROM funcao fc;
+
+#Subquery filtro:
+SELECT f.idFuncionario, f.nomeFuncionario
+FROM funcionario f WHERE f.idFuncao IN (SELECT fc.idfuncao FROM funcao fc WHERE fc.idFuncao = 3);
+
+#Subquery fonte de dados:
+SELECT hs.idFuncionario, hs.nomeFuncionario, hs.idfuncao
+FROM (SELECT * FROM funcionario f WHERE f.salario > 2000) hs WHERE hs.idFuncao > 2;
+
+#Início da procedure sem parâmetros {
+DELIMITER $$
+
+CREATE PROCEDURE cardapio ()
+BEGIN
+SELECT idPrato, nomePrato, valorPrato, igredientes
+FROM prato;
+END $$
+
+DELIMITER ;
+#Fim da Procedure }
+
+#Início da procedure com parâmetros {
+DELIMITER $$
+CREATE PROCEDURE buscarFuncionarioAlto(IN id INT)
+BEGIN
+SELECT * FROM
+(SELECT f.idFuncionario, f.nomeFuncionario, f.idFuncao, f.salario FROM funcionario f WHERE salario > 2000) hs
+WHERE hs.idFuncionario = id;
+END $$
+
+DELIMITER ;
+#Fim da Procedure }
+
+#Drop de procedures
+DROP PROCEDURE cardapio;
+DROP PROCEDURE buscarFuncionarioAlto;
+
+#Chamados das Procedures:
+CALL cardapio;
+
+CALL buscarFuncionarioAlto(1);
